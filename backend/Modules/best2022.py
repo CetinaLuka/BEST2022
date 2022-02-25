@@ -44,8 +44,8 @@ def menageData(data):
     print(averageByDate)
 
 #mergeFiles()
-data = pd.read_csv("allData.csv")
-data = formatData(data)
+#data = pd.read_csv("../../allData.csv")
+#data = formatData(data)
 
-importAccess()
-menageData(data)
+#importAccess()
+#menageData(data)
