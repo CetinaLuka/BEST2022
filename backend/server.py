@@ -1,3 +1,4 @@
+import Modules.best2022 as best
 from flask import Flask
 app = Flask(__name__)
 
@@ -7,8 +8,11 @@ def hello_world():
 
 @app.route('/import')
 def importMeasurements():
+    return best.importAccess()
+    
 
-    return "Uvazam";
+def sendMail():
+    print("sending mail");
 
 if __name__ == '__main__':
     app.run()

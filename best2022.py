@@ -36,6 +36,7 @@ def importAccess():
     data = cursor.fetchall()
     Data = pd.DataFrame(data)
     print(Data)
+    return Data
 
 #mergeFiles()
 data = pd.read_csv("allData.csv")
