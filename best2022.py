@@ -1,3 +1,4 @@
+from email.utils import formatdate
 import os
 import pandas as pd
 
@@ -21,9 +22,15 @@ def mergeFiles():
             line = line.replace("!", ",")
             allData.write(line)
         currFile.close()
+
+def formatData(unformatedData):
+    unformatedData['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
+    unformatedData['Time'] = pd.to_datetime(data['Time'], format="%H:%M:%S").dt.time
+    unformatedData.sort_values(by=["Date","Time"], inplace=True)
+    return unformatedData
+
 #mergeFiles()
 data = pd.read_csv("allData.csv")
-data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
-data['Time'] = pd.to_datetime(data['Time'], format="%H:%M:%S").dt.time
-data.sort_values(by=["Date","Time"], inplace=True)
+data = formatData(data)
+
 print(data.to_string())
