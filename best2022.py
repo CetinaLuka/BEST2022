@@ -1,6 +1,6 @@
-from email.utils import formatdate
 import os
 import pandas as pd
+import pyodbc
 
 def mergeFiles():
     print("Merge all files")
@@ -29,8 +29,18 @@ def formatData(unformatedData):
     unformatedData.sort_values(by=["Date","Time"], inplace=True)
     return unformatedData
 
+def importAccess():      
+    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:.\Baza.accdb;')
+    cursor = conn.cursor()
+    cursor.execute('select * from Data')
+    data = cursor.fetchall()
+    Data = pd.DataFrame(data)
+    print(Data)
+
 #mergeFiles()
 data = pd.read_csv("allData.csv")
 data = formatData(data)
+
+importAccess()
 
 print(data.to_string())
