@@ -30,7 +30,7 @@ def hello_world():
 
 @app.route('/import')
 def importMeasurements():
-    return best.importAccess()
+    return best.readNewFile()
     
 @app.route('/email')
 def sendMail():
@@ -46,14 +46,13 @@ def sendMail():
         print("mail sent");
     return "email poslan"
 
-@app.route('/test')
+@app.route('/consumption')
 def checkConsumption():
     print("test")
     with app.app_context():
         managedData = Utils.getmanagedData();
         consumption.checkIfConsumptionIsWithinRange(managedData.iloc[-1], mail)
     return "Checked consumption"
-        
 
     
 
