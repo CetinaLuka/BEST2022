@@ -7,7 +7,7 @@ def mergeFiles():
     if os.path.exists(mainFileName):
         os.remove(mainFileName)
     allData = open(mainFileName, "a+")
-    allData.write("Date;Time;Oil\n")
+    allData.write("Date,Time,Oil\n")
     path = 'Arhiv_2021'
     arr = os.listdir(path)
     for folder in arr:
@@ -17,8 +17,10 @@ def mergeFiles():
         lines = currFile.readlines()
         for line in lines:
             line = line.replace(" ", "")
-            line = line[0:10] + ";" + line [10:]
-            line = line.replace("!", ";")
+            line = line[0:10] + "," + line [10:]
+            line = line.replace("!", ",")
             allData.write(line)
         currFile.close()
 mergeFiles()
+data = pd.read_csv("allData.csv")
+print(data)
