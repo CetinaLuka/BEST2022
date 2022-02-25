@@ -45,8 +45,8 @@ def manageData(data):
     print(averageByDate.to_string())
 
 #mergeFiles()
-#data = pd.read_csv("../../allData.csv")
-#data = formatData(data)
+data = pd.read_csv("../../allData.csv")
+data = formatData(data)
 
 importAccess()
 manageData(data)
