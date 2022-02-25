@@ -1,4 +1,5 @@
 import os
+from numpy import average
 import pandas as pd
 import pyodbc
 
@@ -30,7 +31,7 @@ def formatData(unformatedData):
     return unformatedData
 
 def importAccess():      
-    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=.\Database\Baza.accdb;')
+    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=./Database/Baza.accdb;')
     cursor = conn.cursor()
     cursor.execute('select * from Data')
     data = cursor.fetchall()
@@ -43,11 +44,12 @@ def manageData(data):
     averageByDate["Diff"] = averageByDate["Oil"].diff() * -1
     averageByDate["Refil"] = (averageByDate["Diff"] < -1) 
     averageByDate["Data Error"] = (averageByDate["Diff"] < -0.0000001) 
-    print(averageByDate.to_string())
+    return averageByDate
+    
 
 #mergeFiles()
-data = pd.read_csv("./../allData.csv")
-data = formatData(data)
+# data = pd.read_csv("./../allData.csv")
+# data = formatData(data)
 
 #importAccess()
-manageData(data)
+# manageData(data)
