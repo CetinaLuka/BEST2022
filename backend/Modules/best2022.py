@@ -30,7 +30,7 @@ def formatData(unformatedData):
     return unformatedData
 
 def importAccess():      
-    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:.\Database\Baza.accdb;')
+    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=.\Database\Baza.accdb;')
     cursor = conn.cursor()
     cursor.execute('select * from Data')
     data = cursor.fetchall()
