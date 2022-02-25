@@ -36,6 +36,7 @@ def importAccess():
     data = cursor.fetchall()
     Data = pd.DataFrame(data)
     print(Data)
+    return Data
 
 def manageData(data):
     averageByDate = data.groupby("Date").mean()
@@ -43,8 +44,13 @@ def manageData(data):
     print(averageByDate.to_string())
 
 #mergeFiles()
-data = pd.read_csv("allData.csv")
-data = formatData(data)
+#data = pd.read_csv("../../allData.csv")
+#data = formatData(data)
 
+<<<<<<< HEAD:best2022.py
 importAccess()
 manageData(data)
+=======
+#importAccess()
+#menageData(data)
+>>>>>>> 9e102c792fc752513412d04c564b8562ff33ef4c:backend/Modules/best2022.py
