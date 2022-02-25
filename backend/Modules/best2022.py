@@ -41,14 +41,13 @@ def importAccess():
 def manageData(data):
     averageByDate = data.groupby("Date").mean()
     averageByDate["Diff"] = averageByDate["Oil"].diff() * -1
-    averageByDate["Fill"] = averageByDate["Diff"] < 0
+    averageByDate["Refil"] = (averageByDate["Diff"] < -1) 
+    averageByDate["Data Error"] = (averageByDate["Diff"] < -0.0000001) 
     print(averageByDate.to_string())
 
 #mergeFiles()
-#data = pd.read_csv("../../allData.csv")
-#data = formatData(data)
+data = pd.read_csv("../../allData.csv")
+data = formatData(data)
 
-importAccess()
-manageData(data)
 #importAccess()
-#menageData(data)
+manageData(data)
