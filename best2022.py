@@ -24,8 +24,8 @@ def mergeFiles():
         currFile.close()
 
 def formatData(unformatedData):
-    unformatedData['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
-    unformatedData['Time'] = pd.to_datetime(data['Time'], format="%H:%M:%S").dt.time
+    unformatedData['Date'] = pd.to_datetime(unformatedData['Date'], format="%d/%m/%Y")
+    unformatedData['Time'] = pd.to_datetime(unformatedData['Time'], format="%H:%M:%S").dt.time
     unformatedData.sort_values(by=["Date","Time"], inplace=True)
     return unformatedData
 
@@ -37,10 +37,14 @@ def importAccess():
     Data = pd.DataFrame(data)
     print(Data)
 
+def menageData(data):
+    averageByDate = data.groupby("Date").mean()
+    averageByDate["Diff"] = averageByDate["Oil"].diff() * -1
+    print(averageByDate)
+
 #mergeFiles()
 data = pd.read_csv("allData.csv")
 data = formatData(data)
 
 importAccess()
-
-print(data.to_string())
+menageData(data)
