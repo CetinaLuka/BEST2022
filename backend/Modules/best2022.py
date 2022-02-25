@@ -1,4 +1,5 @@
 import os
+from numpy import average
 import pandas as pd
 import pyodbc
 
@@ -30,15 +31,16 @@ def formatData(unformatedData):
     return unformatedData
 
 def importAccess():      
-    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:.\Database\Baza.accdb;')
+    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=./Database/Baza.accdb;')
     cursor = conn.cursor()
     cursor.execute('select * from Data')
     data = cursor.fetchall()
     Data = pd.DataFrame(data)
     print(Data)
-    return Data
+    return Data.to_string()
 
 def manageData(data):
+<<<<<<< HEAD
     dataByDate = data.groupby("Date")["Oil"].mean().reset_index()
     minByDate = data.groupby("Date")["Oil"].min().reset_index()
     maxByDate = data.groupby("Date")["Oil"].max().reset_index()
@@ -54,3 +56,18 @@ data = formatData(data)
 
 importAccess()
 manageData(data)
+=======
+    averageByDate = data.groupby("Date").mean()
+    averageByDate["Diff"] = averageByDate["Oil"].diff() * -1
+    averageByDate["Refil"] = (averageByDate["Diff"] < -1) 
+    averageByDate["Data Error"] = (averageByDate["Diff"] < -0.0000001) 
+    return averageByDate
+    
+
+#mergeFiles()
+# data = pd.read_csv("./../allData.csv")
+# data = formatData(data)
+
+#importAccess()
+# manageData(data)
+>>>>>>> 4303a268e303eb21ffe304e22a30da19595feea2
