@@ -40,7 +40,6 @@ def importAccess():
     return Data.to_string()
 
 def manageData(data):
-<<<<<<< HEAD
     dataByDate = data.groupby("Date")["Oil"].mean().reset_index()
     minByDate = data.groupby("Date")["Oil"].min().reset_index()
     maxByDate = data.groupby("Date")["Oil"].max().reset_index()
@@ -48,26 +47,11 @@ def manageData(data):
     dataByDate ["Max"] = maxByDate["Oil"]
     dataByDate["Diff"] = dataByDate["Oil"].diff() * -1
     dataByDate["Refil"] = dataByDate["Max"] - dataByDate["Min"] > 1
-    print(dataByDate.to_string())
+    return dataByDate
 
 #mergeFiles()
-data = pd.read_csv("./../allData.csv")
-data = formatData(data)
-
-importAccess()
-manageData(data)
-=======
-    averageByDate = data.groupby("Date").mean()
-    averageByDate["Diff"] = averageByDate["Oil"].diff() * -1
-    averageByDate["Refil"] = (averageByDate["Diff"] < -1) 
-    averageByDate["Data Error"] = (averageByDate["Diff"] < -0.0000001) 
-    return averageByDate
-    
-
-#mergeFiles()
-# data = pd.read_csv("./../allData.csv")
-# data = formatData(data)
+#data = pd.read_csv("./../allData.csv")
+#data = formatData(data)
 
 #importAccess()
-# manageData(data)
->>>>>>> 4303a268e303eb21ffe304e22a30da19595feea2
+#manageData(data)
