@@ -1,5 +1,10 @@
 import pandas as pd
 import best2022 as best
+from sklearn.ensemble import IsolationForest
+from sklearn.svm import OneClassSVM
+from sklearn.neighbors import LocalOutlierFactor
+from sklearn.covariance import EllipticEnvelope
+from sklearn.neighbors import KernelDensity
 
 REFILL_DIFF_VAL = 0.3
 CALCULATE_RANGE = 20
@@ -40,11 +45,68 @@ def manageRawData(calculatedData, rawData):
         #TODO:POŠLJI EMAIL - DOLIVANJE OLJA
     #print(calculatedData.to_string())
     
+def findAnomalies(data):
+    model=IsolationForest(n_estimators=50, max_samples='auto', contamination=float(0.1),max_features=1.0)
+    model.fit(data[['Oil']])
 
+    data['scores']=model.decision_function(data[['Oil']])
+    data['anomaly']=model.predict(data[['Oil']])
+    
+    anomaly=data.loc[data['anomaly']==-1]
+    anomaly_index=list(anomaly.index)
+    print(len(data.index))
+    print(len(anomaly.index))
+
+    model=OneClassSVM(kernel='rbf', gamma=0.001, nu=0.03)
+    model.fit(data[['Oil']])
+
+    data['scores']=model.decision_function(data[['Oil']])
+    data['anomaly']=model.predict(data[['Oil']])
+    
+    anomaly=data.loc[data['anomaly']==-1]
+    anomaly_index=list(anomaly.index)
+    print(len(data.index))
+    print(len(anomaly.index))
+
+    model=LocalOutlierFactor(n_neighbors=20, novelty=True, contamination=0.1)
+    model.fit(data[['Oil']])
+
+    data['scores']=model.decision_function(data[['Oil']])
+    data['anomaly']=model.predict(data[['Oil']])
+    
+    anomaly=data.loc[data['anomaly']==-1]
+    anomaly_index=list(anomaly.index)
+    print(len(data.index))
+    print(len(anomaly.index))
+
+    model= EllipticEnvelope(contamination=.02)
+    model.fit(data[['Oil']])
+
+    data['scores']=model.decision_function(data[['Oil']])
+    data['anomaly']=model.predict(data[['Oil']])
+    
+    anomaly=data.loc[data['anomaly']==-1]
+    anomaly_index=list(anomaly.index)
+    print(len(data.index))
+    print(len(anomaly.index))
+
+    model=KernelDensity(bandwidth = 0.2, kernel='tophat')#gaussian
+    model.fit(data[['Oil']])
+
+    #data['scores']=model.decision_function(data[['Oil']])
+    #data['anomaly']=model.predict(data[['Oil']])
+    data['anomaly']=model.score_samples(data[['Oil']])
+    
+    anomaly=data.loc[data['anomaly']==-1]
+    anomaly_index=list(anomaly.index)
+    print(len(data.index))
+    print(len(anomaly.index))
 
 rawData = pd.read_csv("../../allData.csv")
 formatedData = best.formatData(rawData)
 calculatedData = best.manageData(formatedData)
 print(calculatedData)
 manageRawData(calculatedData, rawData)
+
+#findAnomalies(calculatedData)
     
