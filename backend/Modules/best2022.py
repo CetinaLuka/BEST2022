@@ -36,7 +36,7 @@ def importAccess():
     data = cursor.fetchall()
     Data = pd.DataFrame(data)
     print(Data)
-    return Data
+    return Data.to_string()
 
 def manageData(data):
     averageByDate = data.groupby("Date").mean()
@@ -48,7 +48,7 @@ def manageData(data):
 data = pd.read_csv("./../allData.csv")
 data = formatData(data)
 
-importAccess()
+#importAccess()
 manageData(data)
 #importAccess()
 #menageData(data)
