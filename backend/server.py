@@ -5,5 +5,10 @@ app = Flask(__name__)
 def hello_world():
     return 'Hello World!'
 
+@app.route('/import')
+def importMeasurements():
+
+    return "Uvazam";
+
 if __name__ == '__main__':
     app.run()
