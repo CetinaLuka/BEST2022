@@ -3,6 +3,8 @@ from flask import Flask, jsonify
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
 import os
+import Modules.Consumption as consumption
+import Modules.Utils as Utils
 
 load_dotenv()
 
@@ -43,6 +45,15 @@ def sendMail():
         mail.send(msg)
         print("mail sent");
     return "email poslan"
+
+@app.route('/test')
+def checkConsumption():
+    print("test")
+    with app.app_context():
+        managedData = Utils.getmanagedData();
+        consumption.checkIfConsumptionIsWithinRange(managedData.iloc[-1], mail)
+    return "Checked consumption"
+        
 
     
 

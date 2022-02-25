@@ -47,7 +47,8 @@ def manageData(data):
     dataByDate ["Max"] = maxByDate["Oil"]
     dataByDate["Diff"] = dataByDate["Oil"].diff() * -1
     dataByDate["Refil"] = dataByDate["Max"] - dataByDate["Min"] > 1
-    print(dataByDate.to_string())
+    #print(dataByDate.to_string())
+    return dataByDate
 
 #mergeFiles()
 data = pd.read_csv("./../allData.csv")
