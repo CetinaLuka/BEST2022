@@ -21,6 +21,9 @@ def mergeFiles():
             line = line.replace("!", ",")
             allData.write(line)
         currFile.close()
-mergeFiles()
+#mergeFiles()
 data = pd.read_csv("allData.csv")
-print(data)
+data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
+data['Time'] = pd.to_datetime(data['Time'], format="%H:%M:%S").dt.time
+data.sort_values(by=["Date","Time"], inplace=True)
+print(data.to_string())
