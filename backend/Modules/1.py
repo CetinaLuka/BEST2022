@@ -45,6 +45,7 @@ def manageRawData(calculatedData, rawData):
         calculatedData.at[dataIndex+1, "Diff"] = nextDay
         #TODO:POŠLJI EMAIL - DOLIVANJE OLJA
     #print(calculatedData.to_string())
+    calculatedData.to_csv("../../editedData.csv")
     
 def findAnomalies(data):
     model=IsolationForest(n_estimators=50, max_samples='auto', contamination=float(0.1),max_features=1.0)
