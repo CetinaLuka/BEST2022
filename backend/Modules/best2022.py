@@ -9,12 +9,12 @@ import Modules.dataBase_util as db
 
 def mergeFiles():
     print("Merge all files")
-    mainFileName = "allData.csv"
+    mainFileName = "../allData.csv"
     if os.path.exists(mainFileName):
         os.remove(mainFileName)
     allData = open(mainFileName, "a+")
     allData.write("Date,Time,Oil\n")
-    path = 'Arhiv_2021'
+    path = '../Arhiv_2021/osnova/'
     arr = os.listdir(path)
     for folder in arr:
         arrFile = os.listdir(path + "/" + folder)
@@ -75,8 +75,15 @@ def manageData(data):
     dataByDate["Refil"] = dataByDate["Max"] - dataByDate["Min"] > 1
     return dataByDate
 
+def readPrevData():
+    mergeFiles()
+    data = pd.read_csv("../allData.csv")
+    data = formatData(data)
+    data = manageData(data)
+    return data
+
 #mergeFiles()
-#data = pd.read_csv("../../allData.csv")
+#
 #data = formatData(data)
 
 #importAccess()
