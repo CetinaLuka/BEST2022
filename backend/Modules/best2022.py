@@ -29,12 +29,8 @@ def mergeFiles():
 def readNewFile():
     yesterday = datetime.today() - timedelta(days=1)
     before_yesterday = datetime.today() - timedelta(days=2)
-    before_yesterday = "24/02/2021"#before_yesterday.strftime("%#d/%m/")+"2021"
+    before_yesterday = before_yesterday.strftime("%#d/%m/")+"2021"
     d = yesterday.strftime("%d_%m_%Y")
-    print(d)
-    #csvFile = "./Data/"+d+".csv"
-    #data = open(csvFile, "w+")
-    #data.write("Date,Time,Oil\n")
     currFile = open("./Data/"+d+".TXT", "r")
     lines = currFile.readlines()
     csvString = "Date,Time,Oil\n"

@@ -39,10 +39,10 @@ def sendMail():
     with app.app_context():
         print("sending mail");
         msg = Message(
-            subject="A ste kaj slabi?", 
+            subject="Test", 
             sender=app.config.get("MAIL_USERNAME"), 
             recipients=["luka.cetina@student.um.si"], 
-            body="Gospod vi ste en velik velik noob. \nLp in lep pozdrav"
+            body="Test emaila"
         )
         mail.send(msg)
         print("mail sent");
