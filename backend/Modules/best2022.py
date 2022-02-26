@@ -3,6 +3,7 @@ import os
 from numpy import average
 import pandas as pd
 import pyodbc
+import Modules.DetectRefills as detect_refills
 from datetime import datetime, timedelta
 import math
 import Modules.dataBase_util as db
@@ -28,6 +29,13 @@ def mergeFiles():
             allData.write(line)
         currFile.close()
 
+def readOldFiles():
+    mergeFiles()
+    data = pd.read_csv("./Data/allData.csv")
+    data = formatData(data)
+    managedData = manageData(data)
+    detect_refills.manageRawData(managedData, data)
+
 def readNewFile():
     yesterday = datetime.today() - timedelta(days=1)
     before_yesterday = datetime.today() - timedelta(days=2)
@@ -50,13 +58,14 @@ def readNewFile():
     currFile.close()
     df = pd.read_csv(StringIO(csvString), sep=",")
     df = formatData(df)
-    accessData = db.importAccessDataForOneDay(str(before_yesterday.strftime("%Y-%m-%d")))
-    print(accessData)
-    joinedData = pd.concat([accessData, df])
-    print(joinedData)
-    managedData = manageData(joinedData)
-    print(managedData)
-    return str(csvString)
+    print(df)
+    oil_before_yesterday = importOilDataForOneDay(before_yesterday)
+    calculated_data = calculate_consumption(df, oil_before_yesterday)
+    if calculated_data.iloc[0]["Refil"] == "True":
+        print("izracunaj porabo ob polnjenju in poslji mail")
+    else:
+        print("ni bilo polnjenja")
+    return calculated_data.iloc[0]
 
 def formatData(unformatedData):
     unformatedData['Date'] = pd.to_datetime(unformatedData['Date'], format="%d/%m/%Y")
