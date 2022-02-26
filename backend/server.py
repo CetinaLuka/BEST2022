@@ -86,7 +86,10 @@ def checkConsumption():
     return "Checked consumption"
 
 @app.route('/find-anomalies')
-def checkConsumption():
+def findAnomalies():
+    with app.app_context():
+        managedData = Utils.getmanagedData();
+        detectRefill.findAnomalies(managedData)
     return "Izpis anomalij"
 
     
