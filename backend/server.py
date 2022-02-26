@@ -6,10 +6,12 @@ from dotenv import load_dotenv
 import os
 import Modules.Consumption as consumption
 import Modules.Utils as Utils
+import Modules.DetectRefills as detectRefill
+import Modules.best2022 as best
+import Modules.dataBase_util as db
 from flask_apscheduler import APScheduler
 
 load_dotenv()
-
 
 mail_settings = {
     "MAIL_SERVER": 'smtp.gmail.com',
@@ -51,13 +53,15 @@ def importMeasurements():
     best.mergeFiles()
     data = best.readPrevData() 
     print(data)
+    data = detectRefill.manageRawData(data)
+    print(data)
     db.csvToAccess(data)
     return data.to_string()
     
 @app.route('/email')
 def sendMail():
     with app.app_context():
-        print("sending mail");
+        print("sending mail")
         msg = Message(
             subject="Test", 
             sender=app.config.get("MAIL_USERNAME"), 

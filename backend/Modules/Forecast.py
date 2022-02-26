@@ -1,10 +1,11 @@
 from array import array
 from datetime import datetime
 from datetime import timedelta
-from numpy import float64, number
+from numpy import number
 import pandas as pd
 from datetime import date
-
+import best2022 as best
+from statsmodels.tsa.seasonal import seasonal_decompose
 
 MIN_OIL = 1
 #http://www.geostik.com/stat/ArhivPod.asp?Tip=K
@@ -16,8 +17,10 @@ COLUMN_DAY = "Day"
 COLUMN_AVERAGE7DAYS = "Average7Days"
 TEMP_FORECAST = [11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76]
 TEMP_FORECAST2 = [11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76,11, 7.18, 4.55, 5.33, 5.84, 6.87, 8.76]
-
-
+AI_WEIGHT_TREND=0.5
+AI_WEIGHT_FORMULA=0.5
+DATA = best.manageData(best.formatData(pd.read_csv("allData.csv")))
+    
 
 def parseTemperature():
     data = pd.read_csv(TEMPERATURE_FILE, sep=";")
@@ -49,20 +52,23 @@ def formatTemperatureTable(unformatedData):
 def calculateOilNeededBasedOnTheTemperature(temperature: number) -> float:
     return 0.135 - temperature/160
 
-# Returns when we'll run out of oil. Returns "None" if we wont run out of fuel. 
+# Returns when we'll run out of oil. Returns "None" if we wont run out of fuel for all available forecasts. 
 def getDateWhenWeWillRunOutOfOil(forecast: array, currentOil: number, currentDate = date.today()) -> datetime:
     totalConsumption = 0
     for i in range (len(forecast)):
-        totalConsumption += calculateOilNeededBasedOnTheTemperature(forecast[i])
+        totalConsumption += getWeightedConsumption(currentDate, forecast[i], DATA, TREND)
+        currentDate += timedelta(days=1)
         if(currentOil - totalConsumption < MIN_OIL):
-            return currentDate + timedelta(days=i)
+            return currentDate
     return None
 
 # Returns average consumption for next X days based on temperature. X is length of the array
 def getEstimatedConsumptionForForecast(forecasts: array) -> float:
     total_consumption = 0
+    currentDate = date.today()
     for forecast in forecasts:
-        total_consumption += calculateOilNeededBasedOnTheTemperature(forecast)
+        total_consumption += getWeightedConsumption(forecast)
+        currentDate += timedelta(days=1)
     return total_consumption
 
 
@@ -71,17 +77,48 @@ def checkIfThereIsEnoughOil(fuelInTank: float, requiredForNext7Days: float, minG
         return True
     return False
 
+def initTrendData() -> pd.DataFrame :
+    data = pd.read_csv("allData.csv")
+    data = best.formatData(data)
+    managedData = best.manageData(data)
+    parsedData = managedData[["Diff",COLUMN_DATE]]
+    parsedData.loc[parsedData['Diff'] < 0, ['Diff']] = 0
+    parsedData.dropna(subset = ["Diff"], inplace=True)
+    parsedData = parsedData.set_index(COLUMN_DATE)
+    decompose_result_mult = seasonal_decompose(parsedData, model="additive",extrapolate_trend='freq')
+    return pd.DataFrame({"Date":decompose_result_mult.trend.index,"trend":decompose_result_mult.trend})
+
+TREND = initTrendData()
+
+def getWeightedConsumption(date:datetime, temperature: float, data:pd.DataFrame = DATA, trend:pd.DataFrame = TREND) -> float:
+    data = data[data[COLUMN_DATE].isin(trend[COLUMN_DATE])]    
+    data.loc[data['Diff'] < 0, ['Diff']] = 0
+
+    oilNeededBasedOnTemp = calculateOilNeededBasedOnTheTemperature(temperature)
+    oilConsumption = 0
+    val = trend.loc[trend[COLUMN_DATE] == date]
+    
+    if(len(val) == 1):
+        print(val.iloc[0]["trend"])
+        print(oilNeededBasedOnTemp)
+        oilConsumption = oilNeededBasedOnTemp * AI_WEIGHT_FORMULA + val.iloc[0]["trend"] * AI_WEIGHT_TREND
+    else:
+        oilConsumption = oilNeededBasedOnTemp
+
+    return (oilConsumption)
+
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 # #                      !Example of usage!  
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# estimation = getEstimatedConsumptionForForecast(TEMP_FORECAST)
-# isEnoughFuel = checkIfThereIsEnoughOil(5,estimation)
-# print(isEnoughFuel)
-
-# dateWhenWeRunOutOfFuel = getDateWhenWeWillRunOutOfOil(TEMP_FORECAST2, 10)
-# print(dateWhenWeRunOutOfFuel)
-
+# data = pd.read_csv("allData.csv")
+# data = best.formatData(data)
+# managedData = best.manageData(data)
+# consumption = getWeightedConsumption(date = "2021-01-01",temperature=3,data = managedData)
+# print(consumption)
+# print(data)
+# runOut = getDateWhenWeWillRunOutOfOil(TEMP_FORECAST2,1.2)
+# print(runOut)
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -90,10 +127,10 @@ def checkIfThereIsEnoughOil(fuelInTank: float, requiredForNext7Days: float, minG
 # data2 = parseTemperature()
 # x = data2[COLUMN_DATE]
 
+# # # print(trend.to_string())
+# # # decompose_result_mult.plot()
+# # # plt.show()
 
-# data = pd.read_csv("allData.csv")
-# data = best.formatData(data)
-# managedData = best.manageData(data)
 
 # y2 = managedData[managedData[COLUMN_DATE].isin(x)]
 
@@ -139,10 +176,6 @@ def checkIfThereIsEnoughOil(fuelInTank: float, requiredForNext7Days: float, minG
 # # # # # # y_test = y_test[y_test["Refil"] == False]
 # # # # # # print(y_test)
 # # # # # # print(y_test["error"].mean())
-
-# # # # # # # plt.plot(y2[COLUMN_DATE],y[COLUMN_TEMPERATURE])
-# # # # # # # plt.plot(y2[COLUMN_DATE],y2["Diff"])
-# # # # # # y_test = y_test.sort_values(by="Date")
-# # # # # # plt.plot(y_test[COLUMN_DATE],y_test["pred"])
-# # # # # # plt.plot(y_test[COLUMN_DATE],y_test["Diff"])
-# # # # # # plt.show()
+# plt.plot(data[COLUMN_DATE],data["Diff"])
+# plt.plot(data[COLUMN_DATE],trend["trend"])
+# plt.show()
