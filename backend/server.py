@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 import Modules.Consumption as consumption
 import Modules.Utils as Utils
+from flask_apscheduler import APScheduler
 
 load_dotenv()
 
@@ -19,13 +20,27 @@ mail_settings = {
 }
 
 app = Flask(__name__)
-
 app.config.update(mail_settings)
 mail = Mail(app)
 
+scheduler = APScheduler()
+scheduler.init_app(app)
+
+# izvede se vsak dan 5 minut čez polnoč
+@scheduler.task('cron', id='dnevno_branje_nove_datoteke', hour=00, minute=5)
+def daily_file_import():
+    print('Job 1 executed')
+
+# izvede se v 30 sekundah potem, ko se aplikacija zažene
+#@scheduler.task('interval', id='demo_branje_nove_datoteke', seconds=30)
+#def daily_file_import_demo():
+#    print('Job 1 executed')
+
+def run_on_start():
+    print("reading old files")
+
 @app.route('/')
 def hello_world():
-    print(app.config)
     return 'Hello World!!!!!'
 
 @app.route('/import')
@@ -57,6 +72,9 @@ def checkConsumption():
     return "Checked consumption"
 
     
+scheduler.start()
+run_on_start()
 
 if __name__ == '__main__':
     app.run()
+    
