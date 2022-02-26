@@ -1,6 +1,6 @@
 import Modules.best2022 as best
 import Modules.dataBase_util as db
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
 import os
@@ -21,6 +21,7 @@ mail_settings = {
 }
 
 app = Flask(__name__)
+app=Flask(__name__,template_folder='template')
 app.config.update(mail_settings)
 mail = Mail(app)
 
@@ -61,8 +62,8 @@ def sendMail():
             subject="Test", 
             sender=app.config.get("MAIL_USERNAME"), 
             recipients=["luka.cetina@student.um.si"], 
-            body="Test emaila"
         )
+        msg.html = render_template("obvestilo_o_preveliki_porabi.html", date="30/10/2022", allowed=10, consumption=12.9)
         mail.send(msg)
         print("mail sent");
     return "email poslan"
@@ -77,7 +78,7 @@ def checkConsumption():
 
     
 scheduler.start()
-run_on_start()
+#run_on_start()
 
 if __name__ == '__main__':
     app.run()
