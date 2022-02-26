@@ -3,6 +3,7 @@ import Modules.dataBase_util as db
 from flask import Flask, jsonify, render_template
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
+import datetime
 import os
 import Modules.Consumption as consumption
 import Modules.Utils as Utils
@@ -43,7 +44,11 @@ def daily_file_import():
 
 def run_on_start():
     print("reading old files")
-    best.readOldFiles()
+    best.mergeFiles()
+    rawData, data = best.readPrevData() 
+    data = detectRefill.manageRawData(data, rawData)
+    print(data)
+    db.csvToAccess(data)
 
 @app.route('/')
 def hello_world():
@@ -51,13 +56,8 @@ def hello_world():
 
 @app.route('/import')
 def importMeasurements():
-    best.mergeFiles()
-    data = best.readPrevData() 
-    print(data)
-    data = detectRefill.manageRawData(data)
-    print(data)
-    db.csvToAccess(data)
-    return data.to_string()
+    best.readNewFile(datetime.datetime(2021, 10, 1))
+    return "Import data"
     
 @app.route('/email')
 def sendMail():

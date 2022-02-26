@@ -4,7 +4,7 @@ from numpy import average
 import pandas as pd
 import pyodbc
 import Modules.DetectRefills as detect_refills
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import math
 import Modules.dataBase_util as db
 
@@ -29,51 +29,46 @@ def mergeFiles():
             allData.write(line)
         currFile.close()
 
-def readOldFiles():
-    mergeFiles()
-    data = pd.read_csv("./Data/allData.csv")
-    data = formatData(data)
-    managedData = manageData(data)
-    detect_refills.manageRawData(managedData, data)
-
-def readNewFile():
-    yesterday = datetime.today() - timedelta(days=1)
-    before_yesterday = datetime.today() - timedelta(days=2)
-    before_yesterday = before_yesterday.replace(year=2021)
-    d = yesterday.strftime("%d_%m_%Y")
-    print(d)
-    print(before_yesterday.strftime("%Y-%m-%d"))
-    #csvFile = "./Data/"+d+".csv"
-    #data = open(csvFile, "w+")
-    #data.write("Date,Time,Oil\n")
-    currFile = open("./Data/"+d+".TXT", "r")
+def readNewFile(currentDate):
+    yesterday = currentDate - timedelta(days=1)
+    #before_yesterday = currentDate - timedelta(days=2)
+    print(currentDate)
+    print (yesterday)
+    file = str(currentDate.strftime("../Arhiv_2021/napoved/Arhiv_%d_%m_%Y"))
+    arr = os.listdir(file)
+    currCsv = open("../currData.csv", "w")
+    currCsv.write("Date,Time,Oil\n")
+    currFile = open(file+"/"+arr[0])
     lines = currFile.readlines()
-    csvString = "Date,Time,Oil\n"
     for line in lines:
         line = line.replace(" ", "")
         line = line[0:10] + "," + line [10:]
         line = line.replace("!", ",")
-        csvString = csvString + line+"\n"
-        #data.write(line)
-    currFile.close()
-    df = pd.read_csv(StringIO(csvString), sep=",")
-    df = formatData(df)
-    print(df)
-    oil_before_yesterday = importOilDataForOneDay(before_yesterday)
-    calculated_data = calculate_consumption(df, oil_before_yesterday)
-    if calculated_data.iloc[0]["Refil"] == "True":
-        print("izracunaj porabo ob polnjenju in poslji mail")
-    else:
-        print("ni bilo polnjenja")
-    return calculated_data.iloc[0]
+        currCsv.write(line)
+    currCsv.close()
+    currData = pd.read_csv("../currData.csv")
+    rawData = formatData(currData)
+    rawData.at[len(rawData)-1, "Date"] = rawData.at[len(rawData)-1, "Date"] - timedelta(days=1)
+    rawData.at[len(rawData)-1, "Time"] = time(hour=23, minute=59, second=59)
+    yesterdayData = db.importAccessDataForOneDay(yesterday.strftime("%Y-%m-%d"))
+    print(yesterdayData)
+    print(rawData)
+    data = manageData(rawData)
+    print(yesterdayData.Mean)
+    data.at[0, "Diff"] = yesterdayData.Mean - data.at[0, "Oil"]
+    print(data)
+    db.oneLineToAccess(data)
+    return rawData, data
 
 def formatData(unformatedData):
     unformatedData['Date'] = pd.to_datetime(unformatedData['Date'], format="%d/%m/%Y")
     unformatedData['Time'] = pd.to_datetime(unformatedData['Time'], format="%H:%M:%S").dt.time
     unformatedData.sort_values(by=["Date","Time"], inplace=True)
+    print(unformatedData)
     return unformatedData
 
 def manageData(data):
+    data = data[:-1]
     dataByDate = data.groupby("Date")["Oil"].mean().reset_index()
     minByDate = data.groupby("Date")["Oil"].min().reset_index()
     maxByDate = data.groupby("Date")["Oil"].max().reset_index()
@@ -87,9 +82,9 @@ def manageData(data):
 def readPrevData():
     mergeFiles()
     data = pd.read_csv("../allData.csv")
-    data = formatData(data)
-    data = manageData(data)
-    return data
+    rawData = formatData(data)
+    data = manageData(rawData)
+    return rawData, data
 
 #mergeFiles()
 #
