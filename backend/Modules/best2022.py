@@ -6,15 +6,16 @@ import pyodbc
 import Modules.DetectRefills as detect_refills
 from datetime import datetime, timedelta
 import math
+import Modules.dataBase_util as db
 
 def mergeFiles():
     print("Merge all files")
-    mainFileName = "./Data/allData.csv"
+    mainFileName = "../allData.csv"
     if os.path.exists(mainFileName):
         os.remove(mainFileName)
     allData = open(mainFileName, "a+")
     allData.write("Date,Time,Oil\n")
-    path = '../Arhiv_2021'
+    path = '../Arhiv_2021/osnova/'
     arr = os.listdir(path)
     for folder in arr:
         arrFile = os.listdir(path + "/" + folder)
@@ -38,8 +39,13 @@ def readOldFiles():
 def readNewFile():
     yesterday = datetime.today() - timedelta(days=1)
     before_yesterday = datetime.today() - timedelta(days=2)
-    before_yesterday = before_yesterday.strftime("%#d/%m/")+"2021"
+    before_yesterday = before_yesterday.replace(year=2021)
     d = yesterday.strftime("%d_%m_%Y")
+    print(d)
+    print(before_yesterday.strftime("%Y-%m-%d"))
+    #csvFile = "./Data/"+d+".csv"
+    #data = open(csvFile, "w+")
+    #data.write("Date,Time,Oil\n")
     currFile = open("./Data/"+d+".TXT", "r")
     lines = currFile.readlines()
     csvString = "Date,Time,Oil\n"
@@ -67,58 +73,6 @@ def formatData(unformatedData):
     unformatedData.sort_values(by=["Date","Time"], inplace=True)
     return unformatedData
 
-def importAccess():      
-    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=./Database/Baza.accdb;')
-    cursor = conn.cursor()
-    cursor.execute('select * from Data')
-    data = cursor.fetchall()
-    Data = pd.DataFrame(data)
-    print(Data)
-    return Data.to_string()
-
-def importOilDataForOneDay(dateString):      
-    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=./Database/Baza.accdb;')
-    cursor = conn.cursor()
-    query = 'select Oil from Data where Date=#'+dateString+'#'
-    #db_data = pd.read_sql(query, conn)
-    #print(db_data)
-    cursor.execute(query)
-    data = cursor.fetchall()
-    #Data = pd.DataFrame(data)
-    return data
-
-def csvToAccess(data):
-    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=../Database/Baza.accdb;')
-    cursor = conn.cursor()
-    query = "DROP TABLE Data"
-    cursor.execute(query)
-    cursor.execute('''
-		CREATE TABLE Data (
-			id INT primary key,
-			mesure_date DATE,
-			mean DOUBLE,
-			min DOUBLE,
-			max DOUBLE,
-			consumption DOUBLE,
-			refil varchar(10)
-			)
-              ''')
-    for row in data.itertuples():
-        cursor.execute('''
-            INSERT INTO Data (id, mesure_date, mean, min, max, consumption, refil)
-            VALUES (?,?,?,?,?,?,?)
-            ''',
-            row.Index, 
-            row.Date,
-            row.Oil,
-            row.Min,
-            row.Max,
-            row.Diff,
-            "True " if row.Refil else "False"
-            )
-
-    conn.commit()
-
 def manageData(data):
     dataByDate = data.groupby("Date")["Oil"].mean().reset_index()
     minByDate = data.groupby("Date")["Oil"].min().reset_index()
@@ -130,19 +84,15 @@ def manageData(data):
     dataByDate["Refil"] = dataByDate["Max"] - dataByDate["Min"] > 1
     return dataByDate
 
-def calculate_consumption(data, yesterdays_oil_value):
-    data.iloc[-1, data.columns.get_loc('Date')] = data.iloc[-2, data.columns.get_loc('Date')]
-    dataByDate = data.groupby("Date")["Oil"].mean().reset_index()
-    minByDate = data.groupby("Date")["Oil"].min().reset_index()
-    maxByDate = data.groupby("Date")["Oil"].max().reset_index()
-    dataByDate ["Min"] = minByDate["Oil"]
-    dataByDate ["Max"] = maxByDate["Oil"]
-    dataByDate["Diff"] = yesterdays_oil_value - dataByDate.iloc[0]["Oil"]
-    dataByDate["Refil"] = dataByDate["Max"] - dataByDate["Min"] > 1
-    return dataByDate
+def readPrevData():
+    mergeFiles()
+    data = pd.read_csv("../allData.csv")
+    data = formatData(data)
+    data = manageData(data)
+    return data
 
 #mergeFiles()
-#data = pd.read_csv("../../allData.csv")
+#
 #data = formatData(data)
 
 #importAccess()

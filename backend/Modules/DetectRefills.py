@@ -55,6 +55,31 @@ def manageRawData(calculatedData, rawData):
 
     #db.csvToAccess(calculatedData) ODKOMENTIRAJ NUJNO !!!!!!!!!!!!!!!!!!!!!!
     
+
+def detectRefilTime(rawData):
+    ref["Diff"] = ref["Oil"].diff()
+    ref["Refil"] = abs(ref["Diff"]) > REFILL_DIFF_VAL
+    beforeIndex = ref[ref.Refil].head(1).index[0]
+    afterIndex = ref[ref.Refil].tail(1).index[0]
+    before = ref[:beforeIndex]
+    after = ref[afterIndex:]
+    before_start = before.head(CALCULATE_RANGE)["Oil"].mean()
+    before_end = before.tail(CALCULATE_RANGE)["Oil"].mean()
+    #print("Before_S:" + str(before_start))
+    #print("Before_E:" + str(before_end))
+    after_start = after.head(CALCULATE_RANGE)["Oil"].mean()
+    after_end = after.tail(CALCULATE_RANGE)["Oil"].mean()
+    #print("After_S:" + str(after_start))
+    #print("After_E:" + str(after_end))
+    oilRefil = after_start - before_end
+    #print(dataIndex)
+    #print("Refil: " + str(oilRefil))
+    dailyDiff = (before_start - before_end) + (after_start - after_end)
+    #print("Daily diff: " + str(dailyDiff)) 
+    calculatedData.at[dataIndex, "Diff"] = dailyDiff
+    nextDay = after_end - calculatedData.at[dataIndex+1, "Oil"]
+
+
 def findAnomalies(data):
     model=IsolationForest(n_estimators=50, max_samples='auto', contamination=float(0.1),max_features=1.0)
     model.fit(data[['Oil']])

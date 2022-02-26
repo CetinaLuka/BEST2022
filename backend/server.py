@@ -1,4 +1,5 @@
 import Modules.best2022 as best
+import Modules.dataBase_util as db
 from flask import Flask, jsonify
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
@@ -46,9 +47,11 @@ def hello_world():
 
 @app.route('/import')
 def importMeasurements():
-    calculated_data = best.readNewFile()
-    consumption.checkIfConsumptionIsWithinRange(calculated_data, mail)
-    return calculated_data.to_string()
+    best.mergeFiles()
+    data = best.readPrevData() 
+    print(data)
+    db.csvToAccess(data)
+    return data.to_string()
     
 @app.route('/email')
 def sendMail():
