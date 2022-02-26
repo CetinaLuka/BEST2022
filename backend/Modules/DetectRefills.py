@@ -1,6 +1,10 @@
 import pandas as pd
 import best2022 as best
+<<<<<<< HEAD:backend/Modules/1.py
 import dataBase_util as db
+=======
+import numpy as np
+>>>>>>> 15db62311874b3e3d77072f143a3efbee6c2ba98:backend/Modules/DetectRefills.py
 from sklearn.ensemble import IsolationForest
 from sklearn.svm import OneClassSVM
 from sklearn.neighbors import LocalOutlierFactor
@@ -52,58 +56,51 @@ def findAnomalies(data):
     model=IsolationForest(n_estimators=50, max_samples='auto', contamination=float(0.1),max_features=1.0)
     model.fit(data[['Oil']])
 
-    data['scores']=model.decision_function(data[['Oil']])
-    data['anomaly']=model.predict(data[['Oil']])
-    
-    anomaly=data.loc[data['anomaly']==-1]
-    anomaly_index=list(anomaly.index)
-    print(len(data.index))
-    print(len(anomaly.index))
-
-    model=OneClassSVM(kernel='rbf', gamma=0.001, nu=0.03)
-    model.fit(data[['Oil']])
-
-    data['scores']=model.decision_function(data[['Oil']])
-    data['anomaly']=model.predict(data[['Oil']])
-    
-    anomaly=data.loc[data['anomaly']==-1]
-    anomaly_index=list(anomaly.index)
-    print(len(data.index))
-    print(len(anomaly.index))
-
-    model=LocalOutlierFactor(n_neighbors=20, novelty=True, contamination=0.1)
-    model.fit(data[['Oil']])
-
-    data['scores']=model.decision_function(data[['Oil']])
-    data['anomaly']=model.predict(data[['Oil']])
-    
-    anomaly=data.loc[data['anomaly']==-1]
-    anomaly_index=list(anomaly.index)
-    print(len(data.index))
-    print(len(anomaly.index))
-
-    model= EllipticEnvelope(contamination=.02)
-    model.fit(data[['Oil']])
-
-    data['scores']=model.decision_function(data[['Oil']])
-    data['anomaly']=model.predict(data[['Oil']])
-    
-    anomaly=data.loc[data['anomaly']==-1]
-    anomaly_index=list(anomaly.index)
-    print(len(data.index))
-    print(len(anomaly.index))
-
-    model=KernelDensity(bandwidth = 0.2, kernel='tophat')#gaussian
-    model.fit(data[['Oil']])
-
     #data['scores']=model.decision_function(data[['Oil']])
-    #data['anomaly']=model.predict(data[['Oil']])
-    data['anomaly']=model.score_samples(data[['Oil']])
+    data['anomalyIF']=model.predict(data[['Oil']])
     
-    anomaly=data.loc[data['anomaly']==-1]
-    anomaly_index=list(anomaly.index)
-    print(len(data.index))
-    print(len(anomaly.index))
+    #anomaly=data.loc[data['anomalyIF']==-1]
+    #anomaly_index=list(anomaly.index)
+    #print(len(data.index))
+    #print(len(anomaly.index))
+
+    model=OneClassSVM(kernel='rbf', gamma=0.001, nu=0.2)
+    model.fit(data[['Oil']])
+
+    data['anomalySVM']=model.predict(data[['Oil']])
+    
+    #anomaly=data.loc[data['anomalySVM']==-1]
+    #print(len(anomaly.index))
+
+    model=LocalOutlierFactor(n_neighbors=40, novelty=True, contamination=0.4)
+    model.fit(data[['Oil']])
+
+    data['anomalyLOF']=model.predict(data[['Oil']])
+    
+    #anomaly=data.loc[data['anomalyLOF']==-1]
+    #print(len(anomaly.index))
+
+    model= EllipticEnvelope(contamination=.2)
+    model.fit(data[['Oil']])
+
+    data['anomalyEE']=model.predict(data[['Oil']])
+    
+    #anomaly=data.loc[data['anomalyEE']==-1]
+    #print(len(anomaly.index))
+
+    model=KernelDensity(bandwidth = 0.2, kernel='gaussian')#tophat
+    model.fit(data[['Oil']])
+
+    data['anomalyKD']=model.score_samples(data[['Oil']])
+    
+    #anomaly=data.loc[data['anomalyKD']<-3]
+    #print(len(anomaly.index))
+
+    #with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+    #    print(data)
+    
+    anomalies=pd.DataFrame(data.loc[(data['anomalyIF']==-1)&(data['anomalySVM']==-1)&(data['anomalyLOF']==-1)&(data['anomalyEE']==-1)&(data['anomalyKD']<-3)])
+    return anomalies
 
 rawData = pd.read_csv("../../allData.csv")
 formatedData = best.formatData(rawData)
@@ -111,5 +108,5 @@ calculatedData = best.manageData(formatedData)
 print(calculatedData)
 manageRawData(calculatedData, rawData)
 
-#findAnomalies(calculatedData)
+print(findAnomalies(calculatedData))
     
