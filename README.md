@@ -25,3 +25,4 @@ Konfiguracijske nastavitve sistema se nahajajo v datoteki `.env` v mapi `/backen
 - http://127.0.0.1:5000/import - sproži simulacijo branja novih txt datotek z meritvami
 - http://127.0.0.1:5000/email - sproži simulacijo obvestila o dolivanju goriva
 - http://127.0.0.1:5000/emailc - sproži simulacijo obvestila o preveliki porabi
+- http://127.0.0.1:5000/find-anomalies - sproži zaznavanje anomalij v podatkih
