@@ -1,5 +1,6 @@
 import pandas as pd
 import best2022 as best
+import dataBase_util as db
 from sklearn.ensemble import IsolationForest
 from sklearn.svm import OneClassSVM
 from sklearn.neighbors import LocalOutlierFactor
@@ -45,6 +46,7 @@ def manageRawData(calculatedData, rawData):
         #TODO:POŠLJI EMAIL - DOLIVANJE OLJA
     #print(calculatedData.to_string())
     calculatedData.to_csv("../../editedData.csv")
+    db.csvToAccess(calculatedData)
     
 def findAnomalies(data):
     model=IsolationForest(n_estimators=50, max_samples='auto', contamination=float(0.1),max_features=1.0)

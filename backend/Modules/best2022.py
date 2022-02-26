@@ -4,6 +4,7 @@ from numpy import average
 import pandas as pd
 import pyodbc
 from datetime import datetime, timedelta
+import math
 
 def mergeFiles():
     print("Merge all files")
@@ -81,6 +82,38 @@ def importAccessDataForOneDay(dateString):
     Data.columns = ["Date", "Time", "Oil"]
     return Data
 
+def csvToAccess(data):
+    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=../Database/Baza.accdb;')
+    cursor = conn.cursor()
+    query = "DROP TABLE Data"
+    cursor.execute(query)
+    cursor.execute('''
+		CREATE TABLE Data (
+			id INT primary key,
+			mesure_date DATE,
+			mean DOUBLE,
+			min DOUBLE,
+			max DOUBLE,
+			consumption DOUBLE,
+			refil varchar(10)
+			)
+              ''')
+    for row in data.itertuples():
+        cursor.execute('''
+            INSERT INTO Data (id, mesure_date, mean, min, max, consumption, refil)
+            VALUES (?,?,?,?,?,?,?)
+            ''',
+            row.Index, 
+            row.Date,
+            row.Oil,
+            row.Min,
+            row.Max,
+            row.Diff,
+            "True " if row.Refil else "False"
+            )
+
+    conn.commit()
+
 def manageData(data):
     dataByDate = data.groupby("Date")["Oil"].mean().reset_index()
     minByDate = data.groupby("Date")["Oil"].min().reset_index()
@@ -88,12 +121,14 @@ def manageData(data):
     dataByDate ["Min"] = minByDate["Oil"]
     dataByDate ["Max"] = maxByDate["Oil"]
     dataByDate["Diff"] = dataByDate["Oil"].diff() * -1
+    dataByDate.at[0, "Diff"] = 0
     dataByDate["Refil"] = dataByDate["Max"] - dataByDate["Min"] > 1
     return dataByDate
 
 #mergeFiles()
-#data = pd.read_csv("./../allData.csv")
+#data = pd.read_csv("../../allData.csv")
 #data = formatData(data)
 
 #importAccess()
-#manageData(data)
+#data = manageData(data)
+#csvToAccess(data)
