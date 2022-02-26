@@ -9,6 +9,7 @@ from sklearn.svm import OneClassSVM
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.covariance import EllipticEnvelope
 from sklearn.neighbors import KernelDensity
+import Modules.dataBase_util as db
 
 REFILL_DIFF_VAL = 0.3
 CALCULATE_RANGE = 20
@@ -129,7 +130,12 @@ def findAnomalies(data):
     #    print(data)
     
     anomalies=pd.DataFrame(data.loc[(data['anomalyIF']==-1)&(data['anomalySVM']==-1)&(data['anomalyLOF']==-1)&(data['anomalyEE']==-1)&(data['anomalyKD']<-3)])
-    return anomalies
+    anomalies.drop('anomalyIF', axis=1, inplace=True)
+    anomalies.drop('anomalySVM', axis=1, inplace=True)
+    anomalies.drop('anomalyLOF', axis=1, inplace=True)
+    anomalies.drop('anomalyEE', axis=1, inplace=True)
+    anomalies.drop('anomalyKD', axis=1, inplace=True)
+    db.oneLineAnomalyToAccess(anomalies)
 
 #rawData = pd.read_csv("../../allData.csv")
 #formatedData = best.formatData(rawData)

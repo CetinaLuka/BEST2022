@@ -50,6 +50,29 @@ def oneLineToAccess(data):
             )
     conn.commit()
 
+def oneLineAnomalyToAccess(data):
+    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=./Database/Baza.accdb;')
+    cursor = conn.cursor()
+    query = "SELECT count(Data.[id])FROM Anomalies;"
+    cursor.execute(query)
+    num = cursor.fetchall()
+    print("NUM: " + str(num[0][0]))
+    for row in data.itertuples():
+        print("ROW: " + str(row))
+        cursor.execute('''
+            INSERT INTO Anomalies (id, mesure_date, mean, min, max, consumption, refil)
+            VALUES (?,?,?,?,?,?,?)
+            ''',
+            num[0][0], 
+            row.Date,
+            row.Oil,
+            row.Min,
+            row.Max,
+            row.Diff,
+            "True " if row.Refil else "False"
+            )
+    conn.commit()
+
 def csvToAccess(data):
     conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=./Database/Baza.accdb;')
     cursor = conn.cursor()
