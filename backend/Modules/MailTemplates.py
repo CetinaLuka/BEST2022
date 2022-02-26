@@ -22,3 +22,12 @@ def createRefilWarning(value, date, amount, recipients=[os.getenv('WARNING_RECIP
     )
     msg.html = render_template("zaznano_polnjenje.html", date=date, amount=amount, consumption=value)
     return msg
+
+def negativeValueWarning(date, recipients=[os.getenv('WARNING_RECIPIENT')], sender=os.getenv("MAIL_USERNAME")):
+    msg = Message(
+        subject="Negativna vrednost zaznana",
+        sender=sender,
+        recipients=recipients,
+    )
+    msg.html = render_template("negativna.html", date=date)
+    return msg
