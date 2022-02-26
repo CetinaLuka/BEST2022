@@ -85,6 +85,10 @@ def checkConsumption():
         consumption.checkIfConsumptionIsWithinRange(managedData.iloc[-1], mail)
     return "Checked consumption"
 
+@app.route('/find-anomalies')
+def checkConsumption():
+    return "Izpis anomalij"
+
     
 scheduler.start()
 run_on_start()
