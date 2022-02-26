@@ -6,6 +6,7 @@ import pandas as pd
 from datetime import date
 import best2022 as best
 from statsmodels.tsa.seasonal import seasonal_decompose
+import matplotlib.pyplot as plt
 
 MIN_OIL = 1
 #http://www.geostik.com/stat/ArhivPod.asp?Tip=K
@@ -99,13 +100,13 @@ def getWeightedConsumption(date:datetime, temperature: float, data:pd.DataFrame 
     val = trend.loc[trend[COLUMN_DATE] == date]
     
     if(len(val) == 1):
-        print(val.iloc[0]["trend"])
-        print(oilNeededBasedOnTemp)
         oilConsumption = oilNeededBasedOnTemp * AI_WEIGHT_FORMULA + val.iloc[0]["trend"] * AI_WEIGHT_TREND
     else:
         oilConsumption = oilNeededBasedOnTemp
 
     return (oilConsumption)
+
+
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 # #                      !Example of usage!  
@@ -114,7 +115,18 @@ def getWeightedConsumption(date:datetime, temperature: float, data:pd.DataFrame 
 # data = pd.read_csv("allData.csv")
 # data = best.formatData(data)
 # managedData = best.manageData(data)
-# consumption = getWeightedConsumption(date = "2021-01-01",temperature=3,data = managedData)
+
+# temperature = parseTemperature()
+# managedData = pd.concat([managedData.set_index(COLUMN_DATE),temperature.set_index(COLUMN_DATE)], axis=1, join='inner').reset_index()
+
+# arraya = []
+# for i, row in managedData.iterrows():
+#     arraya.append(getWeightedConsumption(row["Date"],row["Temperature"]))
+
+# print(arraya)
+# print(managedData)
+# managedData.loc[managedData['Diff'] < 0, ['Diff']] = 0
+# managedData.loc[managedData['Diff'] > 0.3, ['Diff']] = 0.1
 # print(consumption)
 # print(data)
 # runOut = getDateWhenWeWillRunOutOfOil(TEMP_FORECAST2,1.2)
@@ -176,6 +188,8 @@ def getWeightedConsumption(date:datetime, temperature: float, data:pd.DataFrame 
 # # # # # # y_test = y_test[y_test["Refil"] == False]
 # # # # # # print(y_test)
 # # # # # # print(y_test["error"].mean())
-# plt.plot(data[COLUMN_DATE],data["Diff"])
-# plt.plot(data[COLUMN_DATE],trend["trend"])
+# plt.plot(managedData[COLUMN_DATE],arraya, label="Predicted")
+# plt.plot(managedData[COLUMN_DATE],managedData["Diff"], label="Consumption")
+# plt.legend(loc="upper right")
+# # plt.ylim(-1.5, 2.0)
 # plt.show()
