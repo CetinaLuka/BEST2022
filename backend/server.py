@@ -78,7 +78,16 @@ def importMeasurements():
 def sendMail():
     with app.app_context():
         print("sending mail")
-        msg = mail_temp.createRefilWarning(12.5, "12.1.2022", 500)
+        msg = mail_temp.createRefilWarning(110, "12.1.2022", 5000)
+        mail.send(msg)
+        print("mail sent");
+    return "email poslan"
+
+@app.route('/emailc')
+def sendMailC():
+    with app.app_context():
+        print("sending mail")
+        msg = mail_temp.createConsumptionWarning(520, "12.2.2022")
         mail.send(msg)
         print("mail sent");
     return "email poslan"
@@ -90,6 +99,13 @@ def checkConsumption():
         managedData = Utils.getmanagedData();
         consumption.checkIfConsumptionIsWithinRange(managedData.iloc[-1], mail)
     return "Checked consumption"
+
+@app.route('/find-anomalies')
+def findAnomalies():
+    with app.app_context():
+        managedData = Utils.getmanagedData();
+        detectRefill.findAnomalies(managedData)
+    return "Izpis anomalij"
 
     
 scheduler.start()
