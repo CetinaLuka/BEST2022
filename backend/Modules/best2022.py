@@ -3,17 +3,18 @@ import os
 from numpy import average
 import pandas as pd
 import pyodbc
+import Modules.DetectRefills as detect_refills
 from datetime import datetime, timedelta
 import math
 
 def mergeFiles():
     print("Merge all files")
-    mainFileName = "allData.csv"
+    mainFileName = "./Data/allData.csv"
     if os.path.exists(mainFileName):
         os.remove(mainFileName)
     allData = open(mainFileName, "a+")
     allData.write("Date,Time,Oil\n")
-    path = 'Arhiv_2021'
+    path = '../Arhiv_2021'
     arr = os.listdir(path)
     for folder in arr:
         arrFile = os.listdir(path + "/" + folder)
@@ -26,6 +27,13 @@ def mergeFiles():
             line = line.replace("!", ",")
             allData.write(line)
         currFile.close()
+
+def readOldFiles():
+    mergeFiles()
+    data = pd.read_csv("./Data/allData.csv")
+    data = formatData(data)
+    managedData = manageData(data)
+    detect_refills.manageRawData(managedData, data)
 
 def readNewFile():
     yesterday = datetime.today() - timedelta(days=1)
@@ -44,8 +52,13 @@ def readNewFile():
     currFile.close()
     df = pd.read_csv(StringIO(csvString), sep=",")
     df = formatData(df)
+    print(df)
     oil_before_yesterday = importOilDataForOneDay(before_yesterday)
     calculated_data = calculate_consumption(df, oil_before_yesterday)
+    if calculated_data.iloc[0]["Refil"] == "True":
+        print("izracunaj porabo ob polnjenju in poslji mail")
+    else:
+        print("ni bilo polnjenja")
     return calculated_data.iloc[0]
 
 def formatData(unformatedData):

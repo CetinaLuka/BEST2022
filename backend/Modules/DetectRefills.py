@@ -1,8 +1,8 @@
 import pandas as pd
-import best2022 as best
-import dataBase_util as db
+import Modules.dataBase_util as db
 import numpy as np
 import Modules.MailTemplates as mail_temp
+import Modules.best2022 as best
 from sklearn.ensemble import IsolationForest
 from sklearn.svm import OneClassSVM
 from sklearn.neighbors import LocalOutlierFactor
@@ -47,12 +47,13 @@ def manageRawData(calculatedData, rawData):
 
         #POŠLJI EMAIL
         calculatedData.at[dataIndex+1, "Diff"] = nextDay
-        msg = mail_temp.createRefilWarning(round(oilRefil*1000, 2), refils.iloc[i]["Date"].strftime("%d %b %Y"))
-        mail.send(msg)
-        print("Obvestilo poslano")
+        #msg = mail_temp.createRefilWarning(round(oilRefil*1000, 2), refils.iloc[i]["Date"].strftime("%d %b %Y"))
+        #mail.send(msg)
+        #print("Obvestilo poslano")
     #print(calculatedData.to_string())
     calculatedData.to_csv("../../editedData.csv")
-    db.csvToAccess(calculatedData)
+
+    #db.csvToAccess(calculatedData) ODKOMENTIRAJ NUJNO !!!!!!!!!!!!!!!!!!!!!!
     
 def findAnomalies(data):
     model=IsolationForest(n_estimators=50, max_samples='auto', contamination=float(0.1),max_features=1.0)
@@ -104,11 +105,11 @@ def findAnomalies(data):
     anomalies=pd.DataFrame(data.loc[(data['anomalyIF']==-1)&(data['anomalySVM']==-1)&(data['anomalyLOF']==-1)&(data['anomalyEE']==-1)&(data['anomalyKD']<-3)])
     return anomalies
 
-rawData = pd.read_csv("../../allData.csv")
-formatedData = best.formatData(rawData)
-calculatedData = best.manageData(formatedData)
-print(calculatedData)
-manageRawData(calculatedData, rawData)
+#rawData = pd.read_csv("../../allData.csv")
+#formatedData = best.formatData(rawData)
+#calculatedData = best.manageData(formatedData)
+#print(calculatedData)
+#manageRawData(calculatedData, rawData)
 
-print(findAnomalies(calculatedData))
+#print(findAnomalies(calculatedData))
     

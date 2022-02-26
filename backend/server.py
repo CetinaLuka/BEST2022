@@ -38,6 +38,7 @@ def daily_file_import():
 
 def run_on_start():
     print("reading old files")
+    best.readOldFiles()
 
 @app.route('/')
 def hello_world():
