@@ -12,15 +12,15 @@ import math
 
 
 def importAccess():      
-    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=../Database/Baza.accdb;')
+    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=./Database/Baza.accdb;')
     data = pd.read_sql("SELECT mesure_date, mean, min, max, consumption, refil FROM Data", conn)
     Data = pd.DataFrame(data)
     Data.columns = ["Date", "Mean", "Min", "Max", "Diff", "Refil"]
     #print(Data)
     return Data.to_string()
 
-def importAccessDataForOneDay(dateString):      
-    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=../Database/Baza.accdb;')
+def importAccessDataForOneDay(dateString):     
+    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=./Database/Baza.accdb;')
     data = pd.read_sql("SELECT mesure_date, mean, min, max, consumption, refil FROM Data WHERE mesure_date=#"+dateString+"#", conn)
     Data = pd.DataFrame(data)
     Data.columns = ["Date", "Mean", "Min", "Max", "Diff", "Refil"]
@@ -28,7 +28,7 @@ def importAccessDataForOneDay(dateString):
     return Data
 
 def csvToAccess(data):
-    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=../Database/Baza.accdb;')
+    conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=./Database/Baza.accdb;')
     cursor = conn.cursor()
     for row in cursor.tables():
         if row.table_name == "Data":
