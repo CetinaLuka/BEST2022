@@ -10,7 +10,7 @@ def createConsumptionWarning(value, date, recipients=[os.getenv('WARNING_RECIPIE
         sender=sender, 
         recipients=recipients,
     )
-    msg.html = render_template("obvestilo_o_preveliki_porabi.html", date=date, allowed=os.getenv('MAX_CONSUMPTION'), consumption=value)
+    msg.html = render_template("obvestilo_o_preveliki_porabi.html", date=date, allowed=float(os.getenv('MAX_CONSUMPTION'))*1000, consumption=value)
     return msg
 
 
