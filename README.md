@@ -10,13 +10,18 @@ Konfiguracijske nastavitve sistema se nahajajo v datoteki `.env` v mapi `/backen
 - MAX_CONSUMPTION - največja dovoljena poraba (v kubičnih metrih)
 - WARNING_RECIPIENT - email naslov, kamor se bodo opozorila pošiljala
 
-## Requirements
+## Zahteve
  - Python 3^
  - Windows OS
  - [Access driver](https://www.microsoft.com/en-US/download/details.aspx?id=13255)
 
-## How to run
-- open `/backend` folder
-- double click on `run_virtualenv_DEV.bat`
-- wait for everything to install (if this is the first time)
-- done!
+## Navodila za uporabo
+- odprite `/backend` mapo
+- dvakrat kliknite na `run_virtualenv_DEV.bat`
+- počakajte da se vse namesti (če to počnete prvič)
+- aplikacija je zagnana in dostopna na naslovu http://127.0.0.1:5000/
+
+## Končne točke aplikacije
+- http://127.0.0.1:5000/import - sproži simulacijo branja novih txt datotek z meritvami
+- http://127.0.0.1:5000/email - sproži simulacijo obvestila o dolivanju goriva
+- http://127.0.0.1:5000/emailc - sproži simulacijo obvestila o preveliki porabi
