@@ -15,6 +15,8 @@ def checkIfConsumptionIsWithinRange(row:pd.DataFrame, mail:Mail):
         msg = mail_temp.createConsumptionWarning(round(row["Diff"]*1000, 2), row["Date"].strftime("%d %b %Y"))
         mail.send(msg)
         print("Obvestilo poslano")
+    else:
+        print("Poraba je v normalnih mejah.")
 
 
 #data = pd.read_csv("./Data/allData.csv")

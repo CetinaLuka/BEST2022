@@ -29,7 +29,7 @@ def mergeFiles():
 def readNewFile():
     yesterday = datetime.today() - timedelta(days=1)
     before_yesterday = datetime.today() - timedelta(days=2)
-    before_yesterday = "01/01/2021"#before_yesterday.strftime("%#d/%m/")+"2021"
+    before_yesterday = "24/02/2021"#before_yesterday.strftime("%#d/%m/")+"2021"
     d = yesterday.strftime("%d_%m_%Y")
     print(d)
     #csvFile = "./Data/"+d+".csv"
@@ -47,13 +47,9 @@ def readNewFile():
     currFile.close()
     df = pd.read_csv(StringIO(csvString), sep=",")
     df = formatData(df)
-    accessData = importAccessDataForOneDay(before_yesterday)
-    print(accessData)
-    joinedData = pd.concat([accessData, df])
-    print(joinedData)
-    managedData = manageData(joinedData)
-    print(managedData)
-    return str(csvString)
+    oil_before_yesterday = importOilDataForOneDay(before_yesterday)
+    calculated_data = calculate_consumption(df, oil_before_yesterday)
+    return calculated_data.iloc[0]
 
 def formatData(unformatedData):
     unformatedData['Date'] = pd.to_datetime(unformatedData['Date'], format="%d/%m/%Y")
@@ -70,16 +66,16 @@ def importAccess():
     print(Data)
     return Data.to_string()
 
-def importAccessDataForOneDay(dateString):      
+def importOilDataForOneDay(dateString):      
     conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=./Database/Baza.accdb;')
     cursor = conn.cursor()
-    query = 'select ID, Date, Time, Value from Data where Date=#'+dateString+'#'
-    print(query)
+    query = 'select Oil from Data where Date=#'+dateString+'#'
+    #db_data = pd.read_sql(query, conn)
+    #print(db_data)
     cursor.execute(query)
     data = cursor.fetchall()
-    Data = pd.DataFrame(data)
-    Data.columns = ["Date", "Time", "Oil"]
-    return Data
+    #Data = pd.DataFrame(data)
+    return data
 
 def manageData(data):
     dataByDate = data.groupby("Date")["Oil"].mean().reset_index()
@@ -88,6 +84,17 @@ def manageData(data):
     dataByDate ["Min"] = minByDate["Oil"]
     dataByDate ["Max"] = maxByDate["Oil"]
     dataByDate["Diff"] = dataByDate["Oil"].diff() * -1
+    dataByDate["Refil"] = dataByDate["Max"] - dataByDate["Min"] > 1
+    return dataByDate
+
+def calculate_consumption(data, yesterdays_oil_value):
+    data.iloc[-1, data.columns.get_loc('Date')] = data.iloc[-2, data.columns.get_loc('Date')]
+    dataByDate = data.groupby("Date")["Oil"].mean().reset_index()
+    minByDate = data.groupby("Date")["Oil"].min().reset_index()
+    maxByDate = data.groupby("Date")["Oil"].max().reset_index()
+    dataByDate ["Min"] = minByDate["Oil"]
+    dataByDate ["Max"] = maxByDate["Oil"]
+    dataByDate["Diff"] = yesterdays_oil_value - dataByDate.iloc[0]["Oil"]
     dataByDate["Refil"] = dataByDate["Max"] - dataByDate["Min"] > 1
     return dataByDate
 
