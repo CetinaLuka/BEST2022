@@ -78,7 +78,7 @@ def checkConsumption():
 
     
 scheduler.start()
-#run_on_start()
+run_on_start()
 
 if __name__ == '__main__':
     app.run()
