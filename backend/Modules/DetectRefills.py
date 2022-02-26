@@ -53,9 +53,9 @@ def manageRawData(calculatedData, rawData):
         #print("Obvestilo poslano")
     #print(calculatedData.to_string())
     calculatedData.to_csv("../../editedData.csv")
-
     #db.csvToAccess(calculatedData) ODKOMENTIRAJ NUJNO !!!!!!!!!!!!!!!!!!!!!!
-    
+    return calculatedData
+
 
 def detectRefilTime(rawData):
     ref["Diff"] = ref["Oil"].diff()
