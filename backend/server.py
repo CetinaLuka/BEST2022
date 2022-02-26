@@ -9,6 +9,7 @@ import Modules.Utils as Utils
 import Modules.DetectRefills as detectRefill
 import Modules.best2022 as best
 import Modules.dataBase_util as db
+import Modules.MailTemplates as mail_temp
 from flask_apscheduler import APScheduler
 
 load_dotenv()
@@ -62,12 +63,7 @@ def importMeasurements():
 def sendMail():
     with app.app_context():
         print("sending mail")
-        msg = Message(
-            subject="Test", 
-            sender=app.config.get("MAIL_USERNAME"), 
-            recipients=["luka.cetina@student.um.si"], 
-        )
-        msg.html = render_template("obvestilo_o_preveliki_porabi.html", date="30/10/2022", allowed=10, consumption=12.9)
+        msg = mail_temp.createRefilWarning(12.5, "12.1.2022", 500)
         mail.send(msg)
         print("mail sent");
     return "email poslan"
