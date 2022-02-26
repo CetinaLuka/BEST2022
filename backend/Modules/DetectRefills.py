@@ -57,6 +57,35 @@ def manageRawData(calculatedData, rawData):
     return calculatedData
 
 
+def corigateRefilToday(data, rawData):
+    ref = rawData
+    ref["Diff"] = ref["Oil"].diff()
+    ref["Refil"] = abs(ref["Diff"]) > REFILL_DIFF_VAL
+    print(ref)
+    print(ref.to_string())
+    beforeIndex = ref[ref.Refil].head(1).index[0]
+    afterIndex = ref[ref.Refil].tail(1).index[0]
+    before = ref[:beforeIndex]
+    after = ref[afterIndex:]
+    before_start = before.head(CALCULATE_RANGE)["Oil"].mean()
+    before_end = before.tail(CALCULATE_RANGE)["Oil"].mean()
+    print("Before_S:" + str(before_start))
+    print("Before_E:" + str(before_end))
+    after_start = after.head(CALCULATE_RANGE)["Oil"].mean()
+    after_end = after.tail(CALCULATE_RANGE)["Oil"].mean()
+    print("After_S:" + str(after_start))
+    print("After_E:" + str(after_end))
+    oilRefil = after_start - before_end
+    #print(dataIndex)
+    #print("Refil: " + str(oilRefil))
+    dailyDiff = (before_start - before_end) + (after_start - after_end)
+    #print("Daily diff: " + str(dailyDiff)) 
+    data.at[0, "Diff"] = dailyDiff
+    data.at[0, "Oil"] = after_end
+    print(data)
+    return data, round(oilRefil*1000, 2),  data.iloc[0]["Date"].strftime("%d %b %Y"), round(dailyDiff*1000, 2)
+
+
 def detectRefilTime(rawData):
     ref["Diff"] = ref["Oil"].diff()
     ref["Refil"] = abs(ref["Diff"]) > REFILL_DIFF_VAL

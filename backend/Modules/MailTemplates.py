@@ -14,7 +14,7 @@ def createConsumptionWarning(value, date, recipients=[os.getenv('WARNING_RECIPIE
     return msg
 
 
-def createRefilWarning(value, date, amount, recipients=[os.getenv('WARNING_RECIPIENT')], sender=os.getenv("MAIL_USERNAME")):
+def createRefilWarning(value, date, amount, recipients=[os.getenv('WARNING_RECIPIENT',"luka.cetina@student.um.si")], sender=os.getenv("MAIL_USERNAME","nadzornikgoriva@gmail.com")):
     msg = Message(
         subject="Dolivanje kurilnega olja",
         sender=sender, 

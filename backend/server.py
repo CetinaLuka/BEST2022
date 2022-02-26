@@ -3,7 +3,7 @@ import Modules.dataBase_util as db
 from flask import Flask, jsonify, render_template
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
-import datetime
+from datetime import datetime, timedelta, time
 import os
 import Modules.Consumption as consumption
 import Modules.Utils as Utils
@@ -21,7 +21,7 @@ mail_settings = {
     "MAIL_USE_TLS": False,
     "MAIL_USE_SSL": True,
     "MAIL_USERNAME": os.getenv('MAIL_USERNAME'),
-    "MAIL_PASSWORD": os.getenv('MAIL_PASSWORD')
+    "MAIL_PASSWORD": os.getenv('MAIL_PASSWORD', "Best2022")
 }
 
 app = Flask(__name__)
@@ -56,7 +56,22 @@ def hello_world():
 
 @app.route('/import')
 def importMeasurements():
-    best.readNewFile(datetime.datetime(2021, 10, 1))
+    dt = datetime(2021, 10, 1)
+    for i in range(30):
+        rawData, data, isYesterdayRefil = best.readNewFile(dt)
+        consumption.checkIfConsumptionIsWithinRange(data.iloc[0], mail)
+        
+        
+        if data.at[0, "Refil"] == True:
+            data, amount, date, value = detectRefill.corigateRefilToday(data, rawData)
+            #msg = mail_temp.createRefilWarning(value, date, amount)
+            #mail.send(msg)
+        dt = dt + timedelta(days=1)
+        if data.at[0, "Oil"] < 0.00001:
+            data.at[0, "Oil"] = 0
+            #TODO:POŠLJI EMAIL
+        db.oneLineToAccess(data)
+
     return "Import data"
     
 @app.route('/email')
@@ -78,7 +93,7 @@ def checkConsumption():
 
     
 scheduler.start()
-#run_on_start()
+run_on_start()
 
 if __name__ == '__main__':
     app.run()

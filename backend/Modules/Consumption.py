@@ -8,7 +8,7 @@ import os
 load_dotenv()
 
 def checkIfConsumptionIsWithinRange(row:pd.DataFrame, mail:Mail):
-    MAX_CONSUMPTION = os.getenv('MAX_CONSUMPTION')
+    MAX_CONSUMPTION = os.getenv('MAX_CONSUMPTION',0.4)
     if(row["Diff"] > float(MAX_CONSUMPTION)):
         #TODO pošlji email obvestilo da je poraba presegla threshold
         print("Pošlji mail, kjer je poraba več kot MAX_CONSUMPTION poraba je:", row["Diff"])

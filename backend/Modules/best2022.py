@@ -32,8 +32,8 @@ def mergeFiles():
 def readNewFile(currentDate):
     yesterday = currentDate - timedelta(days=1)
     #before_yesterday = currentDate - timedelta(days=2)
-    print(currentDate)
-    print (yesterday)
+    #print(currentDate)
+    #print (yesterday)
     file = str(currentDate.strftime("../Arhiv_2021/napoved/Arhiv_%d_%m_%Y"))
     arr = os.listdir(file)
     currCsv = open("../currData.csv", "w")
@@ -51,20 +51,21 @@ def readNewFile(currentDate):
     rawData.at[len(rawData)-1, "Date"] = rawData.at[len(rawData)-1, "Date"] - timedelta(days=1)
     rawData.at[len(rawData)-1, "Time"] = time(hour=23, minute=59, second=59)
     yesterdayData = db.importAccessDataForOneDay(yesterday.strftime("%Y-%m-%d"))
-    print(yesterdayData)
-    print(rawData)
+    isYesterdayRefil = yesterdayData.Refil == "True"
+    print(isYesterdayRefil)
+    #print(yesterdayData)
+    #print(rawData)
     data = manageData(rawData)
-    print(yesterdayData.Mean)
+    #print(yesterdayData.Mean)
     data.at[0, "Diff"] = yesterdayData.Mean - data.at[0, "Oil"]
-    print(data)
-    db.oneLineToAccess(data)
-    return rawData, data
+    #print(data)
+    return rawData, data, isYesterdayRefil
 
 def formatData(unformatedData):
     unformatedData['Date'] = pd.to_datetime(unformatedData['Date'], format="%d/%m/%Y")
     unformatedData['Time'] = pd.to_datetime(unformatedData['Time'], format="%H:%M:%S").dt.time
     unformatedData.sort_values(by=["Date","Time"], inplace=True)
-    print(unformatedData)
+    #print(unformatedData)
     return unformatedData
 
 def manageData(data):
